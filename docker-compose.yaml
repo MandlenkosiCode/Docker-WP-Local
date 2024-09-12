@@ -8,10 +8,10 @@ services:
       - MYSQL_DATABASE=wordpress
     volumes:
       - ./db:/var/lib/mysql
-    command: '--default-authentication-plugin=mysql_native_password'
+    command: "--default-authentication-plugin=mysql_native_password"
     networks:
       - wplocal-network
-  
+
   wordpress:
     depends_on:
       - db
@@ -53,7 +53,7 @@ services:
       - ./app:/var/www/html
     networks:
       - wplocal-network
-  
+
   phpmyadmin:
     depends_on:
       - db
@@ -69,7 +69,29 @@ services:
     networks:
       - wplocal-network
 
+  wp:
+    container_name: wpcli
+    working_dir: /var/www/html
+    image: wordpress:cli
+    environment:
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
+      - WORDPRESS_TABLE_PREFIX=wp_
+      - WORDPRESS_DB_USER=$MYSQL_USER
+    depends_on:
+      - db
+      - wordpress
+      - webserver
+    user: 1000:1000
+    entrypoint: ["wp"]
+    volumes:
+      - ./app:/var/www/html
+      - ./db:/var/lib/mysql
+    networks:
+      - wplocal-network
 
 networks:
   wplocal-network:
     driver: bridge
+
