@@ -9,6 +9,10 @@ services:
     volumes:
       - ./db:/var/lib/mysql
     command: "--default-authentication-plugin=mysql_native_password"
+    healthcheck:
+      test: "mysql -uroot -p$MYSQL_ROOT_PASSWORD -e 'select 1'"
+      interval: 1s
+      retries: 120
     networks:
       - wplocal-network
 
@@ -80,9 +84,8 @@ services:
       - WORDPRESS_TABLE_PREFIX=wp_
       - WORDPRESS_DB_USER=$MYSQL_USER
     depends_on:
-      - db
-      - wordpress
-      - webserver
+      db:
+        condition: service_healthy
     user: 1000:1000
     entrypoint: ["wp"]
     volumes:
@@ -94,4 +97,3 @@ services:
 networks:
   wplocal-network:
     driver: bridge
-
